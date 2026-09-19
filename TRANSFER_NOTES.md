@@ -59,10 +59,11 @@ Treat their numbering as now-fixed: append, don't renumber.
 
 See `FEATURE_STATUS.md` for the exhaustive list. The short version:
 
-- **Progress, Profile, and Settings pages** are honest placeholders with no
-  real functionality (`PlaceholderPage` component, or equivalent inline
-  copy). Settings currently offers only "log out" and the AI connection
-  test as real functionality.
+- **Progress page** is still an honest placeholder with no real
+  functionality. (Profile and Settings' study-availability editing were
+  built after the initial transfer — see the changelog at the end of this
+  file. Settings' privacy controls and account deletion remain
+  placeholders.)
 - **Dashboard's "Progress Summary" card** still renders static, hardcoded
   text — see "Known bugs" below. ("Upcoming Deadlines" was fixed after the
   initial transfer; see the changelog at the end of this file.)
@@ -172,10 +173,15 @@ In priority order:
    project (see `tests/README.md`) — the pure-logic unit tests added in this
    session (`npm test`) are a start, but they can't cover RLS or the
    private validation helpers inside `"use server"` files.
-4. Decide on and build Progress, Profile, and Settings — in that rough
-   order of how visible their absence currently is on the Dashboard/nav.
-   `ProgressSummaryCard` (bug #2) is naturally part of the Progress work.
-5. Plan the Next.js 15/16 upgrade as its own dedicated piece of work (bug
+4. Decide on and build the Progress page (streaks/XP/level/completed-session
+   stats) — the one remaining placeholder page, and a real product/design
+   decision (what counts as a streak, how XP is earned, level thresholds)
+   that shouldn't be invented unilaterally by whoever implements it.
+   `ProgressSummaryCard` (bug #2) is naturally part of this work. (Profile
+   and Settings' availability editing are done — see changelog.)
+5. Build a Settings editor for study preferences (methods) the same way —
+   `savePreferences` already exists and is unused outside onboarding.
+6. Plan the Next.js 15/16 upgrade as its own dedicated piece of work (bug
    #4), not bundled into an unrelated feature change.
 
 ## Changelog (post-initial-transfer)
@@ -199,3 +205,28 @@ Changes made in a follow-up session, after the initial export/audit above:
   "Recommended next task" #3 above and `tests/README.md`).
 - Re-ran `npm run type-check`, `npm run lint`, and a full `npm run build`
   (with placeholder Supabase env values) after both changes — all pass.
+
+Changes made in a second follow-up session:
+
+- **Built real Profile and Settings-availability editors**, replacing two of
+  the three placeholder pages. Both reuse the *exact same* Server Actions
+  already validated during onboarding (`saveBasicInfo`, `saveSubjects`,
+  `saveGoals`, `saveAvailability`) — no new backend logic, no new
+  migrations, no new validation rules. New components:
+  `src/components/profile/{BasicInfoEditor,SubjectsEditor,GoalsEditor}.tsx`
+  and `src/components/settings/AvailabilityEditor.tsx`. The onboarding step
+  components themselves (`src/components/onboarding/steps/*`) were left
+  untouched rather than made to serve double duty — the two contexts differ
+  in one meaningful way (onboarding navigates to the next step on save;
+  these editors stay on the page and show an inline "Saved." message), and
+  onboarding is a proven, working flow not worth risking for reuse of a few
+  hundred lines of form markup.
+- Study preferences (methods) editing was deliberately **not** added to
+  either page in this pass — see "Recommended next task" #5.
+- Settings' placeholder copy was trimmed to name only what's still
+  unbuilt (privacy controls, account deletion).
+- Re-ran `npm run type-check`, `npm run lint`, `npm test`, and a full
+  `npm run build` (placeholder Supabase env values) after this change — all
+  pass. `/profile` and `/settings` route bundle sizes grew from ~150B
+  (placeholder) to several KB each, consistent with real form components
+  now being rendered.

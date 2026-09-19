@@ -106,8 +106,11 @@ audit method). Status labels:
 | Feature | Status |
 |---|---|
 | Progress page (streaks, XP, level, completed-session stats) | Planned — honest placeholder only |
-| Profile page (edit name/grade/subjects/goals) | Planned — honest placeholder only |
-| Settings — study availability editing | Planned — honest placeholder only |
+| Profile page — edit name/grade level | Implemented but needs testing — reuses the same `saveBasicInfo` Server Action as onboarding |
+| Profile page — edit subjects | Implemented but needs testing — reuses `saveSubjects` |
+| Profile page — edit goals | Implemented but needs testing — reuses `saveGoals` |
+| Settings — study availability editing | Implemented but needs testing — reuses `saveAvailability`, same validation as onboarding's Availability step |
+| Settings — study preferences (methods) editing | Planned — `savePreferences` exists and is exercised during onboarding, but no dedicated editor was built for it in Profile or Settings in this pass |
 | Settings — privacy controls | Planned — honest placeholder only |
 | Settings — account deletion | Planned — honest placeholder only (see `SECURITY.md` section 20 for what this needs to handle when built) |
 | Settings — log out | Implemented but needs testing |

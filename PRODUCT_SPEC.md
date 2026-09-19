@@ -60,8 +60,9 @@ See `FEATURE_STATUS.md` for the authoritative, exhaustive list. Summary:
 | AI Concept Explanation | Implemented, needs testing |
 | AI Study Buddy chat | Implemented, needs testing |
 | Progress tracking (streaks, XP, level, completed-session stats) | Planned — page exists as an honest placeholder |
-| Profile editing | Planned — page exists as an honest placeholder |
-| Settings (availability editing, privacy, account deletion) | Planned — page exists as an honest placeholder |
+| Profile editing (name, grade, subjects, goals) | Implemented, needs testing |
+| Settings — study availability editing | Implemented, needs testing |
+| Settings (privacy, account deletion) | Planned — placeholder text only |
 | Google auth, cloud storage, YouTube, Khan Academy integrations | **Not started** — no code for any of these exists anywhere in this codebase |
 
 ## Explicitly out of scope for now

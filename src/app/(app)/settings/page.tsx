@@ -1,19 +1,40 @@
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AiConnectionTest } from "@/components/settings/AiConnectionTest";
+import { AvailabilityEditor } from "@/components/settings/AvailabilityEditor";
 import { Card } from "@/components/ui/Card";
+import { createClient } from "@/lib/supabase/server";
+import type { StudyAvailability } from "@/types/database";
 
-export default function SettingsPage() {
+/**
+ * (app)/layout.tsx already guards this route, but this page fetches its
+ * own data independently, consistent with the rest of this codebase.
+ */
+export default async function SettingsPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let availability: StudyAvailability[] = [];
+  if (user) {
+    const { data } = await supabase
+      .from("study_availability")
+      .select("*")
+      .eq("user_id", user.id);
+    availability = (data ?? []) as StudyAvailability[];
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
 
       <Card>
         <p className="text-sm text-text-muted">
-          This page is a placeholder created as part of the application
-          foundation. Study availability, privacy controls, and account
-          deletion have not been built yet.
+          Privacy controls and account deletion have not been built yet.
         </p>
       </Card>
+
+      <AvailabilityEditor initialAvailability={availability} />
 
       <Card title="Account">
         <p className="mb-4 text-sm text-text-muted">
