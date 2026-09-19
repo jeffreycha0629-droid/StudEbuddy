@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  DESIGN_SYSTEM.md section 4: until the final StudEbuddy brand palette is
+  confirmed, use neutral, accessible defaults and centralize color here
+  instead of hardcoding colors feature by feature. Update these variables
+  (and note the change in DESIGN_SYSTEM.md) once the real palette is set.
+*/
+:root {
+  --background: #ffffff;
+  --foreground: #1c1917;
+
+  --surface: #ffffff;
+  --surface-muted: #f5f5f4;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+
+  --accent: #0d9488;
+
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --error: #dc2626;
+
+  --border: #e7e5e4;
+  --text-muted: #78716c;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+/* DESIGN_SYSTEM.md section 17: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
