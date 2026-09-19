@@ -78,12 +78,15 @@ done:
 ```bash
 npm run type-check
 npm run lint
+npm test
 npm run build
 ```
 
 `npm run build` requires `.env.local` to exist with at least placeholder
 Supabase values (see `README.md`) — Next.js needs real-looking config present
-to decide which routes are static vs. dynamic during the build.
+to decide which routes are static vs. dynamic during the build. `npm test`
+runs the Vitest suite in `tests/` — see `tests/README.md` for what it does
+and doesn't cover yet.
 
 ## 7. Where to look first
 

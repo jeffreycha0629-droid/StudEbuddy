@@ -41,7 +41,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-4">
         <TodaysPlanCard subjects={subjects} />
         <DailyCheckInCard />
-        <UpcomingDeadlinesCard />
+        <UpcomingDeadlinesCard subjects={subjects} />
         <ProgressSummaryCard />
       </div>
     </div>

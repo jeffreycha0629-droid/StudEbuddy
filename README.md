@@ -63,6 +63,7 @@ clear in-app error telling you what's missing until you configure it.
    ```bash
    npm run type-check
    npm run lint
+   npm test
    npm run build
    ```
    `npm run build` requires `.env.local` to have at least placeholder-looking
@@ -95,7 +96,8 @@ studebuddy/
 ├── supabase/
 │   ├── migrations/            # SQL migrations, apply in filename order
 │   └── README.md              # how to apply migrations without the Supabase CLI
-├── tests/                     # currently a placeholder — see tests/README.md
+├── tests/unit/                # Vitest unit tests for pure logic — see tests/README.md
+├── vitest.config.ts
 ├── .env.local.example         # documents every environment variable; copy to .env.local
 ├── .gitignore
 ├── package.json
@@ -121,7 +123,9 @@ See `TRANSFER_NOTES.md` for more on this.
   in the 14.x line; fixing them requires upgrading to Next.js 15/16, which
   is a breaking change out of scope for this transfer. See
   `TRANSFER_NOTES.md`.
-- No automated tests exist yet (see `tests/README.md` and
-  `FEATURE_STATUS.md`).
-- The Dashboard's "Upcoming Deadlines" and "Progress" cards are static
-  placeholders, not wired to real data — see `FEATURE_STATUS.md`.
+- Only a first slice of automated tests exists (`npm test`): pure-logic unit
+  tests, no Server Action/integration/E2E coverage yet — see
+  `tests/README.md` and `FEATURE_STATUS.md`.
+- The Dashboard's "Progress" card is a static placeholder, not wired to real
+  data (the "Upcoming Deadlines" card was fixed and now queries real tasks)
+  — see `FEATURE_STATUS.md`.

@@ -98,8 +98,8 @@ audit method). Status labels:
 | Time-of-day greeting | Implemented and tested |
 | Today's Plan card (live sessions + timer) | Implemented but needs testing |
 | Daily Check-In card | Implemented but needs testing |
-| **Upcoming Deadlines card** | **Planned** — the widget exists but is a hardcoded static message ("No assignments yet...") regardless of whether the student actually has upcoming tasks. It does not query `study_tasks`. See `TRANSFER_NOTES.md`. |
-| **Progress Summary card** | **Planned** — same situation: static placeholder text, no real query. |
+| Upcoming Deadlines card | Implemented but needs testing — now queries `study_tasks` for the student's soonest non-completed tasks (including overdue ones, styled distinctly) instead of showing static text. Fixed after the initial transfer; see `TRANSFER_NOTES.md`. |
+| **Progress Summary card** | **Planned** — still a static placeholder. Genuinely depends on the not-yet-built Progress feature (streaks/XP/level), so left alone; see `TRANSFER_NOTES.md`. |
 
 ## Progress, Profile, Settings pages
 
@@ -136,7 +136,9 @@ changes in future work, this table should gain rows.
 
 | Item | Status |
 |---|---|
-| Unit/integration test framework | Planned — no test runner (Jest/Vitest/etc.) is installed or configured. `tests/` exists with a note explaining this. |
+| Unit test framework (Vitest) | Implemented and tested — configured (`vitest.config.ts`), runs via `npm test`. |
+| Unit tests for pure logic (date/class-name/validation/nav/formatting helpers) | Implemented and tested — 49 tests across 6 files, all passing. See `tests/unit/`. |
+| Server Action / integration tests | Planned — the validation logic inside `"use server"` action files (e.g. `validateAiSessions`) isn't exported and can't be unit-tested without either exporting it or a real/mocked Supabase client; see `tests/README.md`. |
 | End-to-end tests | Planned |
 | CI pipeline | Planned — no `.github/workflows` or equivalent exists |
 | Manual RLS verification against a live Supabase project | Planned — documented as a manual procedure in `supabase/README.md`, not yet performed |

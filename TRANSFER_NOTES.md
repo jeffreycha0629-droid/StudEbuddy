@@ -63,10 +63,11 @@ See `FEATURE_STATUS.md` for the exhaustive list. The short version:
   real functionality (`PlaceholderPage` component, or equivalent inline
   copy). Settings currently offers only "log out" and the AI connection
   test as real functionality.
-- **Dashboard's "Upcoming Deadlines" and "Progress Summary" cards** render
-  static, hardcoded text regardless of the user's actual data — see "Known
-  bugs" below, this is more of a gap than a stylistic choice.
-- **No automated tests, no CI.** See `tests/README.md`.
+- **Dashboard's "Progress Summary" card** still renders static, hardcoded
+  text — see "Known bugs" below. ("Upcoming Deadlines" was fixed after the
+  initial transfer; see the changelog at the end of this file.)
+- **No CI, and only a first slice of automated tests.** See `tests/README.md`
+  and the changelog below for what exists so far.
 - **No account deletion flow** (`SECURITY.md` section 20 has the checklist
   for building it correctly when the time comes).
 - **Google auth, cloud storage, YouTube, and Khan Academy integrations do
@@ -91,16 +92,13 @@ See `FEATURE_STATUS.md` for the exhaustive list. The short version:
    preserving addition per file. Left undone in this transfer because it
    touches ~10 files for a build-time-only edge case, and the task's actual
    acceptance test (`npm run dev`) is unaffected.
-2. **Dashboard's `ProgressSummaryCard` and `UpcomingDeadlinesCard` don't
-   query real data.** Both are hardcoded to a single static message,
-   unconditionally, even for a user with real overdue tasks or completed
-   sessions. This will read as a bug to any real user with data. Recommend
-   wiring `UpcomingDeadlinesCard` to `study_tasks` (mirror the pattern in
-   `TodaysPlanCard`/`TaskListView`: self-fetch client-side by `due_date`,
-   ordered, excluding completed) as the highest-value small fix here;
-   `ProgressSummaryCard` genuinely depends on the not-yet-built Progress
-   feature (streaks/XP/level) and is more reasonably left as a placeholder
-   until that's designed.
+2. **Dashboard's `ProgressSummaryCard` doesn't query real data** — hardcoded
+   to a single static message unconditionally. It genuinely depends on the
+   not-yet-built Progress feature (streaks/XP/level), so it's reasonably
+   left as a placeholder until that's designed, rather than wired to a query
+   that doesn't fully answer what the card promises.
+   (`UpcomingDeadlinesCard` had the identical problem and was fixed — see
+   the changelog at the end of this file.)
 3. **TypeScript errors existed in the code as received** and were fixed
    during this transfer (all behavior-preserving, no logic changes):
    - `src/lib/actions/tasks.ts`: `createTask`/`updateTask` guarded on
@@ -146,6 +144,12 @@ See `FEATURE_STATUS.md` for the exhaustive list. The short version:
 6. **No `package-lock.json` existed before this transfer** (dependencies
    were pinned in `package.json` but never actually installed and locked).
    One now exists, generated from a clean `npm install` in this session.
+7. **`npm audit` now also reports two moderate-severity, dev-only findings**
+   (`@vitest/mocker`, `esbuild`) introduced by adding Vitest as a
+   devDependency (see changelog). Both only affect the local dev/test
+   toolchain — neither ships in the production build — so this doesn't
+   change the app's runtime security posture, but keep an eye on it the
+   same way as bug #4.
 
 ## Recommended next task
 
@@ -164,11 +168,34 @@ In priority order:
    `filterValidSessions`) — it's the most algorithmically complex part of
    the codebase and the part most likely to have an edge case that only
    shows up with real dates and real availability data.
-3. Fix the two dashboard stub cards (bug #2 above) — cheap, high visibility.
-4. Set up a test runner (Vitest is a good fit) and start with the pure
-   validation/formatting functions per `tests/README.md`, then Server Action
-   integration tests that actually exercise RLS as an authenticated user.
-5. Decide on and build Progress, Profile, and Settings — in that rough
+3. Build Server Action / integration tests against that real Supabase
+   project (see `tests/README.md`) — the pure-logic unit tests added in this
+   session (`npm test`) are a start, but they can't cover RLS or the
+   private validation helpers inside `"use server"` files.
+4. Decide on and build Progress, Profile, and Settings — in that rough
    order of how visible their absence currently is on the Dashboard/nav.
-6. Plan the Next.js 15/16 upgrade as its own dedicated piece of work (bug
+   `ProgressSummaryCard` (bug #2) is naturally part of the Progress work.
+5. Plan the Next.js 15/16 upgrade as its own dedicated piece of work (bug
    #4), not bundled into an unrelated feature change.
+
+## Changelog (post-initial-transfer)
+
+Changes made in a follow-up session, after the initial export/audit above:
+
+- **Fixed `UpcomingDeadlinesCard`** (bug #2 in the original transfer): now
+  self-fetches the student's soonest non-completed `study_tasks` (including
+  overdue ones, styled distinctly) instead of showing static placeholder
+  text, following the same client-side self-fetch pattern as
+  `TodaysPlanCard`/`TaskListView`. `ProgressSummaryCard` was deliberately
+  left as-is (see bug #2, updated).
+- **Added a first slice of automated tests**: Vitest (`vitest@^2.1.9`,
+  chosen over the newer major to stay compatible with this project's
+  existing `@types/node` range without an unrelated bump), configured via
+  `vitest.config.ts`, with `npm test` / `npm test:watch` scripts. 49 tests
+  across `tests/unit/` cover the pure, side-effect-free helpers: date
+  formatting, class-name joining, email/password validation, nav-item
+  active-state logic, and the task/session label-lookup functions. This
+  does not cover Server Actions, RLS, or the AI validation logic (see
+  "Recommended next task" #3 above and `tests/README.md`).
+- Re-ran `npm run type-check`, `npm run lint`, and a full `npm run build`
+  (with placeholder Supabase env values) after both changes — all pass.
