@@ -78,6 +78,21 @@ See `FEATURE_STATUS.md` for the exhaustive list. The short version:
 
 ## Known bugs / rough edges
 
+0. **Newly-created task doesn't appear in "Study Plan" (manual builder) or
+   "Generate a Study Plan with AI" task dropdowns until the page reloads.**
+   Found during the click-through verification below: `src/app/(app)/study-plan/page.tsx`
+   fetches `tasks` once, server-side, and passes the same array to
+   `StudyPlanClient` (whose `TaskListView` self-refetches via a
+   `refreshKey` bump on create — see `StudyPlanClient.tsx`),
+   `StudyPlanBuilder`, and `GenerateAiPlanForm`. Only `TaskListView` has
+   the refresh wiring; the other two don't, so a task you just added is
+   visible in "Your Tasks" immediately but missing from both dropdowns
+   below it until you refresh the page. **Fix:** lift `tasks` into page-
+   level client state (or give `StudyPlanBuilder`/`GenerateAiPlanForm` the
+   same self-fetch-on-`refreshKey` pattern `TaskListView` already uses) so
+   all three stay in sync off one `onCreated` callback. Not fixed in this
+   pass — flagged for the next person touching this page.
+
 1. **`npm run build` fails with no `.env.local` at all.** Pages under
    `(app)` and a few others call `createClient()` (which throws immediately
    if `NEXT_PUBLIC_SUPABASE_URL`/`_ANON_KEY` are unset) before Next.js's

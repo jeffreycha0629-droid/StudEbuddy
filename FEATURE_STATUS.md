@@ -59,7 +59,7 @@ audit method). Status labels:
 
 | Feature | Status |
 |---|---|
-| Get-or-create a plan for a task | Implemented but needs testing |
+| Get-or-create a plan for a task | Implemented but needs testing — note: the task picker dropdown here doesn't refresh after adding a new task without a page reload; see `TRANSFER_NOTES.md` bug 0 |
 | Add/edit/remove a session | Implemented but needs testing |
 | Study timer (start/pause/resume/end) | Implemented but needs testing |
 | One-active-session-per-user enforcement (DB-level) | Implemented but needs testing |
@@ -86,7 +86,7 @@ audit method). Status labels:
 | Feature | Status |
 |---|---|
 | AI connection test (Settings page) | Implemented but needs testing |
-| AI Study Plan — preview generation | Implemented but needs testing |
+| AI Study Plan — preview generation | Implemented but needs testing — same stale-dropdown caveat as the manual builder above (`TRANSFER_NOTES.md` bug 0) |
 | AI Study Plan — accept/save (with schedule re-validation) | Implemented but needs testing |
 | AI Study Plan — edit a proposed session before accepting | Implemented but needs testing |
 | AI Study Plan — regenerate with a reason, replacing non-completed sessions | Implemented but needs testing |
