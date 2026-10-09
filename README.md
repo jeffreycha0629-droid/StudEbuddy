@@ -16,18 +16,64 @@ what's built vs. planned), `DATABASE_SCHEMA.md`, `DESIGN_SYSTEM.md`,
 
 - Node.js 18.18+ (tested with Node 22)
 - npm (tested with npm 10)
-- A [Supabase](https://supabase.com) project (free tier is fine) — required
-  for auth and every database-backed feature
+- For the fastest path to a fully working prototype (recommended, see below):
+  [Docker](https://docs.docker.com/get-docker/) — no Supabase account needed.
+- For a persistent/shared backend instead: a [Supabase](https://supabase.com)
+  project (free tier is fine).
 - An [Anthropic API key](https://console.anthropic.com/) — required for the
   AI features (Study Buddy, AI study plans, assignment breakdown, concept
-  explanation)
+  explanation) regardless of which backend option you pick above. There's no
+  local/free substitute for this one — it's a billed third-party API call.
 
-Neither Supabase nor Anthropic credentials are required just to install and
-start the dev server — the app starts and the public marketing pages work
-with zero configuration. Pages that need a database or the AI will show a
-clear in-app error telling you what's missing until you configure it.
+Neither is required just to install and start the dev server — the app
+starts and the public marketing pages work with zero configuration. Pages
+that need a database or the AI will show a clear in-app error telling you
+what's missing until you configure it.
 
-## Setup
+## Setup — fastest path to a fully working, clickable prototype (no account signup)
+
+This runs the *real* Supabase stack (Postgres, Auth, REST API) entirely on
+your own machine via Docker — not a mock, not a simulation. Every feature
+except the AI ones works exactly as it would against a real cloud project:
+real signup/login, real Row Level Security, real data that persists across
+reloads. This was the exact setup used to verify the app end-to-end before
+this note was written (see `TRANSFER_NOTES.md`'s changelog).
+
+```bash
+npm install
+npx supabase start   # pulls and starts Postgres/Auth/REST locally, applies
+                      # every migration in supabase/migrations/ automatically
+```
+
+`supabase start` prints an `API_URL` and `ANON_KEY` — copy them into
+`.env.local`:
+
+```bash
+cp .env.local.example .env.local
+# then set:
+#   NEXT_PUBLIC_SUPABASE_URL=<the API_URL it printed, e.g. http://127.0.0.1:54321>
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=<the ANON_KEY it printed>
+```
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), sign up with any email
+(no real inbox needed — local Auth doesn't require email confirmation by
+default) and click through the real app: onboarding, tasks, study plans,
+the timer, calendar, profile, settings. Everything writes to the local
+Postgres database (`npx supabase studio` — or the Studio URL `start` also
+prints — gives you a GUI to inspect it). AI features will show "AI isn't
+configured yet" until you also add a real `ANTHROPIC_API_KEY` to
+`.env.local` and restart the dev server.
+
+When you're done, `npx supabase stop` shuts the local stack down.
+
+## Setup — using your own cloud Supabase project instead
+
+Use this if you want a persistent backend you can share with others, or
+don't want to run Docker locally.
 
 1. **Install dependencies:**
    ```bash
@@ -46,12 +92,14 @@ clear in-app error telling you what's missing until you configure it.
 
    No real values are required for `npm run dev` to start.
 
-3. **Apply the database schema** to your Supabase project. This project
-   doesn't have the Supabase CLI wired up yet, so migrations are applied by
-   hand — see `supabase/README.md` for the exact, file-by-file steps (open
-   each file in `supabase/migrations/` in order, paste into the Supabase
-   SQL Editor, run). This step is required before any auth-gated page or
-   database feature will work.
+3. **Apply the database schema** to your Supabase project. The Supabase CLI
+   is set up in this repo (`supabase/config.toml`), so the easiest way is
+   `npx supabase link --project-ref <your-project-ref>` once, then
+   `npx supabase db push` to apply every migration in
+   `supabase/migrations/`. See `supabase/README.md` for that, plus a
+   manual (copy-paste into the SQL Editor) fallback if you'd rather not
+   link the CLI to your project. This step is required before any
+   auth-gated page or database feature will work.
 
 4. **Run the development server:**
    ```bash

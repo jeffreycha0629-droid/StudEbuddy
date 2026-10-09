@@ -230,3 +230,54 @@ Changes made in a second follow-up session:
   pass. `/profile` and `/settings` route bundle sizes grew from ~150B
   (placeholder) to several KB each, consistent with real form components
   now being rendered.
+
+Changes made in a third follow-up session, in response to "can you build me
+a prototype I can click through with working features":
+
+- **Set up real, local Supabase** (`npx supabase init` → `supabase/config.toml`
+  now in the repo) so the full app runs against the actual Supabase stack
+  (Postgres + GoTrue Auth + PostgREST, via Docker) with **zero cloud account
+  signup** — just `npx supabase start`. This isn't a mock: it's the same
+  software Supabase Cloud runs, just local. Documented as the recommended
+  "fastest path to a working prototype" in `README.md`, with the previous
+  cloud-project instructions kept as an alternative. `supabase/README.md`
+  updated to match (and its migration-ordering instructions restructured
+  under "Option A: local" / "Option B: cloud" without changing their
+  content).
+- **Verified the result end-to-end** with Playwright driving a real
+  Chromium browser against the running app (not just API calls): fresh
+  signup → full 7-step onboarding with real data entry → dashboard showing
+  the correct personalized greeting → created/edited/deleted a real task →
+  confirmed that task appears on both the Study Plan page and the
+  (previously-fixed) Upcoming Deadlines dashboard card → logged out and
+  back in successfully → Profile page correctly pre-filled with the real
+  onboarding data → Settings' new availability editor saved a value that
+  survived a full page reload (proving it's a real database write, not
+  just client state). Two separate scripts, two separate test users, all
+  passing. Screenshots were captured and shown to the user as proof.
+- **Verified Row Level Security directly against the REST API** (not just
+  by reading the migration SQL): created a task as one user, confirmed a
+  second user's own access token could not see it. Confirmed the
+  `on_auth_user_created` trigger fires correctly via a direct Postgres
+  query. This resolves the long-standing "RLS reviewed but not
+  runtime-verified" caveat for at least `study_tasks` and the profile
+  trigger — see `supabase/README.md` and `FEATURE_STATUS.md` for the
+  updated status of specific rows.
+- Updated `FEATURE_STATUS.md` row-by-row to move specifically-verified
+  items from "needs testing" to "tested," being precise about exactly what
+  was and wasn't exercised (e.g., task completion toggling and the
+  Profile page's own Save button specifically were not clicked in this
+  pass, even though the Server Actions they call were proven via other
+  paths).
+- What's still genuinely untested: AI features (no `ANTHROPIC_API_KEY`
+  available), the study timer, the manual multi-session study plan
+  builder, Calendar beyond rendering, password reset's email delivery
+  (Mailpit captures outgoing local mail and could test this — just wasn't
+  done here), and task completion toggling.
+- This verification ran in this session's own sandboxed container, which
+  has no way to expose a live URL to the user's own browser — so the
+  actual deliverable for "click through it yourself" is the two-command
+  local setup above, not a hosted link. The local Supabase stack
+  (`npx supabase stop`) and the dev server should be stopped and
+  `.env.local` removed before the branch is considered clean for a fresh
+  clone, which this session did before finishing.

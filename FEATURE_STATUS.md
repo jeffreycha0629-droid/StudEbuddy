@@ -9,11 +9,15 @@ audit method). Status labels:
   against real output).
 - **Implemented but needs testing** — code exists, looks complete and
   correct on review, but has not been exercised end-to-end against a real
-  Supabase project and/or a real Anthropic API key (neither was available
-  during this transfer). This is the status for almost everything that
-  touches the database or the AI, and it is not a mark against the code —
-  it's an honest statement that "compiles and reads correctly" isn't the
-  same as "verified against a live backend."
+  backend. Most of this was later resolved for the non-AI features by
+  running a real local Supabase stack (Postgres/Auth/REST, via
+  `npx supabase start` — see `TRANSFER_NOTES.md`'s changelog) and driving
+  the actual UI with Playwright; rows updated to **Implemented and tested**
+  below say so explicitly, including what was and wasn't covered. Local and
+  cloud Supabase run identical software, so this is real verification, not
+  a mock — but it's still worth a pass against your own cloud project
+  before trusting it with real users. AI features remain untested — they
+  need a real `ANTHROPIC_API_KEY`, which no one has supplied yet.
 - **Prototype simulation** — a feature that fakes real behavior (typically
   with `localStorage`) instead of using a real backend.
 - **Planned** — no functional code exists yet; at most an honest placeholder
@@ -25,31 +29,31 @@ audit method). Status labels:
 
 | Feature | Status |
 |---|---|
-| Sign up (Supabase Auth) | Implemented but needs testing |
-| Log in | Implemented but needs testing |
-| Log out | Implemented but needs testing |
-| Forgot password / reset password email flow | Implemented but needs testing (depends on Supabase project email delivery being configured) |
-| Session refresh via middleware | Implemented but needs testing |
-| Route guards on authenticated pages (`(app)`, `/onboarding`) | Implemented but needs testing |
+| Sign up (Supabase Auth) | Implemented and tested — verified via Playwright against local Supabase (real signup, immediate session) |
+| Log in | Implemented and tested — verified (log out, then log back in with the same credentials, landed on dashboard) |
+| Log out | Implemented and tested — verified (redirected to `/login`) |
+| Forgot password / reset password email flow | Implemented but needs testing (not exercised; local Supabase captures outgoing mail via Mailpit, which would let this be tested the same way, but it wasn't in this pass) |
+| Session refresh via middleware | Implemented but needs testing — not directly exercised (would need a session nearing token expiry) |
+| Route guards on authenticated pages (`(app)`, `/onboarding`) | Implemented and tested — every authenticated page visited during verification required the real session to render |
 
 ## Onboarding
 
 | Feature | Status |
 |---|---|
-| 7-step flow (Welcome → Basic Info → Subjects → Goals → Preferences → Availability → Complete) | Implemented but needs testing |
-| Resuming onboarding with previously-saved answers | Implemented but needs testing |
-| Server-side gate requiring name + grade level before completion | Implemented but needs testing |
+| 7-step flow (Welcome → Basic Info → Subjects → Goals → Preferences → Availability → Complete) | Implemented and tested — verified twice end-to-end via Playwright, including real database writes at each step |
+| Resuming onboarding with previously-saved answers | Implemented but needs testing — the mechanism (pre-filling from the same data the Profile page reads) was indirectly confirmed, but re-visiting an in-progress onboarding step URL specifically wasn't exercised |
+| Server-side gate requiring name + grade level before completion | Implemented but needs testing — the happy path (fields filled) was exercised; the rejection path wasn't |
 
 ## Tasks (Study Plan page)
 
 | Feature | Status |
 |---|---|
-| Create task | Implemented but needs testing |
-| Edit task | Implemented but needs testing |
-| Delete task (with inline confirm) | Implemented but needs testing |
-| Mark task complete/incomplete (optimistic UI) | Implemented but needs testing |
+| Create task | Implemented and tested — verified via Playwright |
+| Edit task | Implemented and tested — verified (renamed a task, new title persisted) |
+| Delete task (with inline confirm) | Implemented and tested — verified (deleted, confirmed gone) |
+| Mark task complete/incomplete (optimistic UI) | Implemented but needs testing — not exercised in this pass |
 | Filter by subject/status/due date | Implemented but needs testing |
-| Overdue/Today/Upcoming/Completed sectioning | Implemented but needs testing |
+| Overdue/Today/Upcoming/Completed sectioning | Implemented but needs testing — tasks were created with future due dates, so only the "Upcoming" bucket was indirectly exercised |
 
 ## Study plans & sessions (manual)
 
@@ -98,7 +102,7 @@ audit method). Status labels:
 | Time-of-day greeting | Implemented and tested |
 | Today's Plan card (live sessions + timer) | Implemented but needs testing |
 | Daily Check-In card | Implemented but needs testing |
-| Upcoming Deadlines card | Implemented but needs testing — now queries `study_tasks` for the student's soonest non-completed tasks (including overdue ones, styled distinctly) instead of showing static text. Fixed after the initial transfer; see `TRANSFER_NOTES.md`. |
+| Upcoming Deadlines card | Implemented and tested — now queries `study_tasks` for the student's soonest non-completed tasks (including overdue ones, styled distinctly) instead of showing static text; verified it displays a just-created real task immediately. Fixed after the initial transfer; see `TRANSFER_NOTES.md`. |
 | **Progress Summary card** | **Planned** — still a static placeholder. Genuinely depends on the not-yet-built Progress feature (streaks/XP/level), so left alone; see `TRANSFER_NOTES.md`. |
 
 ## Progress, Profile, Settings pages
@@ -106,10 +110,10 @@ audit method). Status labels:
 | Feature | Status |
 |---|---|
 | Progress page (streaks, XP, level, completed-session stats) | Planned — honest placeholder only |
-| Profile page — edit name/grade level | Implemented but needs testing — reuses the same `saveBasicInfo` Server Action as onboarding |
-| Profile page — edit subjects | Implemented but needs testing — reuses `saveSubjects` |
-| Profile page — edit goals | Implemented but needs testing — reuses `saveGoals` |
-| Settings — study availability editing | Implemented but needs testing — reuses `saveAvailability`, same validation as onboarding's Availability step |
+| Profile page — edit name/grade level | Implemented but needs testing — reuses the same `saveBasicInfo` Server Action as onboarding (and that action is tested via onboarding); confirmed the Profile page correctly pre-fills from real data, but its own "Save Changes" button wasn't clicked in this pass |
+| Profile page — edit subjects | Implemented but needs testing — same caveat as above, reuses tested `saveSubjects` |
+| Profile page — edit goals | Implemented but needs testing — same caveat as above, reuses tested `saveGoals` |
+| Settings — study availability editing | Implemented and tested — verified via Playwright: saved Wednesday's hours, reloaded the page, confirmed the value actually persisted (not just client-side state) |
 | Settings — study preferences (methods) editing | Planned — `savePreferences` exists and is exercised during onboarding, but no dedicated editor was built for it in Profile or Settings in this pass |
 | Settings — privacy controls | Planned — honest placeholder only |
 | Settings — account deletion | Planned — honest placeholder only (see `SECURITY.md` section 20 for what this needs to handle when built) |
@@ -144,4 +148,4 @@ changes in future work, this table should gain rows.
 | Server Action / integration tests | Planned — the validation logic inside `"use server"` action files (e.g. `validateAiSessions`) isn't exported and can't be unit-tested without either exporting it or a real/mocked Supabase client; see `tests/README.md`. |
 | End-to-end tests | Planned |
 | CI pipeline | Planned — no `.github/workflows` or equivalent exists |
-| Manual RLS verification against a live Supabase project | Planned — documented as a manual procedure in `supabase/README.md`, not yet performed |
+| Manual RLS verification | Implemented and tested — performed against local Supabase (identical software to cloud): confirmed `study_tasks`'s policies actually block one user's token from seeing another user's row, not just that the policies exist in the migration. Only this one table was spot-checked this way; the rest are reviewed but not individually runtime-verified — see `supabase/README.md`. |
